@@ -1,0 +1,64 @@
+TITLE:: MIDINoteMessage
+summary:: Container to output MIDI note on/off messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+An object representing outgoing MIDI note messages, attached to a MIDI output device.
+
+An improvement over MIDIOut: MIDINoteMessage can optionally send note-off messages automatically, after a user-specified duration.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance.
+
+ARGUMENT:: note
+The initial note number. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: velocity
+The initial velocity. This may be overwritten when link::#-play::-ing the message. (If you are sending a large number of notes with the same velocity, you can set the velocity once, and there is no need to specify it repeatedly.)
+
+Velocity == 0 sends a note-off message. (Currently, it is not supported in this framework to send note-off messages with a nonzero velocity.)
+
+ARGUMENT:: dur
+The number of beats, on the current clock, to sustain the note. If code::nil::, then a note-off message will not be sent (and it is the user's responsibility to send note-off explicitly).
+
+ARGUMENT:: channel
+The MIDI channel to send to.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+INSTANCEMETHODS::
+
+METHOD:: dur
+Get or set the note sustain duration.
+
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+n = MIDINoteMessage(channel: 0, device: m, latency: 0.2);
+
+n.play(60, 64, 2);  // sustain for two beats
+
+n.play([60, 64, 67], 64, 2);  // multichannel expansion!
+
+n.dur = nil;  // clear the previous 2.0 beats
+n.play(72, 64);  // holds forever
+n.play(72, 0);  // release
+::

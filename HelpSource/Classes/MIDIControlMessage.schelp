@@ -1,0 +1,53 @@
+TITLE:: MIDIControlMessage
+summary:: Container to output MIDI continuous controller messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+An object representing outgoing MIDI continuous controller messages, attached to a MIDI output device.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance.
+
+ARGUMENT:: ccnum
+The initial controller number. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: value
+The initial value. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: channel
+The MIDI channel to send to.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+INSTANCEMETHODS::
+
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+n = MIDIControlMessage(channel: 0, device: m, latency: 0);
+
+n.play(1, 64);  // CC1 set to 64
+
+n.play(nil, 72);  // last ccnum, set to 72
+
+n.play([1, 7, 10], [64, 100, 64]);  // multichannel expansion!
+::

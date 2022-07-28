@@ -1,0 +1,62 @@
+TITLE:: MIDIPolyTouchMessage
+summary:: Container to output MIDI poly-touch messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+An object representing outgoing MIDI poly-touch messages, attached to a MIDI output device.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance.
+
+ARGUMENT:: note
+The initial note number. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: pressure
+The initial pressure value. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: channel
+The MIDI channel to send to.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+INSTANCEMETHODS::
+
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+n = MIDIPolyTouchMessage(channel: 0, device: m, latency: 0);
+
+// polytouch LFO
+(
+n.dataA = 60;  // set the note number
+
+fork {
+	var i = 0;
+	loop {
+		// 'nil' = don't overwrite note number
+		n.play(nil, i.fold(0, 127));
+		i = i + 5;
+		0.05.wait;
+	}
+}
+)
+::

@@ -1,0 +1,58 @@
+TITLE:: MIDIBendMessage
+summary:: Container to output MIDI pitch bend messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+An object representing outgoing MIDI pitch bend messages, attached to a MIDI output device.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance.
+
+ARGUMENT:: value
+The initial value. This may be overwritten when link::#-play::-ing the message.
+
+NOTE:: Unlike link::Classes/MIDIOut#-bend::, the neutral value is 0 (not 8192). "8192" is an implementation detail that should be hidden from the user. ::
+
+ARGUMENT:: channel
+The MIDI channel to send to.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+INSTANCEMETHODS::
+
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+n = MIDIBendMessage(channel: 0, device: m, latency: 0);
+
+// pitch bend LFO
+(
+fork {
+	var i = 0;
+	loop {
+		n.play(i.fold(-8000, 8000));
+		i = i + 200;
+		0.05.wait;
+	}
+}
+)
+::

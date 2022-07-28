@@ -1,0 +1,139 @@
+TITLE:: MIDIRealtimeMessage
+summary:: Container to output MIDI realtime messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+An object representing outgoing MIDI realtime messages: song position, tune request, MIDI clock start / continue / stop / tick, active sensing, reset.
+
+
+
+CLASSMETHODS::
+
+subsection:: Clock messages
+
+METHOD:: start
+Create an instance to represent MIDI clock "start" messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: continue
+Create an instance to represent MIDI clock "start" messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: clock
+Create an instance to represent MIDI clock "start" messages. One should be sent every 1/24 beat.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: stop
+Create an instance to represent MIDI clock "start" messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+subsection:: Other messages
+
+METHOD:: activeSensing
+Create an instance to represent active-sensing messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: songPos
+Create an instance to represent song position pointer messages.
+
+ARGUMENT:: value
+The 14-bit song position to be sent. This may be overwritten when link::#-play::-ing the message.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: reset
+Create an instance to represent reset messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: tune
+Create an instance to represent tune request messages.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
+
+INSTANCEMETHODS::
+
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+~start = MIDIRealtimeMessage.start(m, 0.2);
+~stop = MIDIRealtimeMessage.stop(m, 0.2);
+~tick = MIDIRealtimeMessage.clock(m, 0.2);
+
+(
+r = fork {
+	(thisThread.clock.timeToNextBeat - 0.01).wait;
+	~start.play;
+	thisThread.clock.timeToNextBeat.wait;
+	loop {
+		23.do {
+			~tick.play;
+			(1/24).wait;
+		};
+		~tick.play;
+		thisThread.clock.timeToNextBeat.wait;
+	}
+};
+)
+
+TempoClock.default.gui;
+
+r.stop; ~stop.play;
+::

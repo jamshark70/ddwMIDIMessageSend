@@ -1,0 +1,46 @@
+TITLE:: MIDISysexMessage
+summary:: Container to output MIDI realtime messages
+categories:: External Control>MIDI
+related:: Classes/MIDIMessage, Classes/MIDISender, Classes/VSTPluginMIDISender
+
+
+DESCRIPTION::
+An object representing outgoing MIDI system exclusive messages.
+
+NOTE:: Sysex messages are sent to devices, not channels, so link::#*new:: omits the channel argument. Also, latency is not supported for sysex (so this argument is omitted as well). ::
+
+CLASSMETHODS::
+
+METHOD:: new
+Create an instance.
+
+ARGUMENT:: int8array
+The initial sysex packet, as an link::Classes/Int8Array::. This may be overwritten when link::#-play::-ing the message.
+
+NOTE:: Do not include the 0xF0 and 0xF7 delimiters in the array. These will be appended for you. ::
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+
+INSTANCEMETHODS::
+
+private:: prPlay, flop, constructor, keys
+
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+// no delimiters!
+c = MIDISysexMessage(Int8Array[1, 2, 3], m);
+c.play;
+
+// overwrite and send new data
+c.play(Int8Array.fill(4, { 128.rand }));
+::

@@ -1,0 +1,91 @@
+TITLE:: MIDIMessage
+summary:: Abstract class representing outgoing MIDI messages
+categories:: External Control>MIDI
+related:: Classes/MIDISender, Classes/VSTPluginMIDISender
+
+DESCRIPTION::
+MIDIMessage rethinks the MIDI output programming interface, by placing messages at the center. (link::Classes/MIDIOut:: focuses on the output device.)
+
+MIDIMessage is an abstract class. Don't use it directly.
+
+Instead, create and use subclasses. See the examples.
+
+The key methods will be documented under subclasses:
+
+list::
+## link::Classes/MIDINoteMessage::
+## link::Classes/MIDIControlMessage::
+## link::Classes/MIDIBendMessage::
+## link::Classes/MIDIPolyTouchMessage::
+## link::Classes/MIDITwoByteMessage:: -- touch, program, song select
+## link::Classes/MIDIRealtimeMessage:: -- song position, tune request, MIDI clock start / continue / stop / tick, active sensing, reset
+## link::Classes/MIDISysexMessage::
+::
+
+
+subsection:: Why?
+
+The excellent link::https://git.iem.at/pd/vstplugin:: extension is the main motivation for this quark. Most VST instruments accept MIDI messages, but there are fundamental differences between hardware MIDI output and virtual MIDI output to the SuperCollider audio server, particularly in the handling of messaging latency. It's my hope, by "inverting" the interface and focusing on message contents rather than message transport, that the physical differences would disappear for practical use cases.
+
+
+
+INSTANCEMETHODS::
+
+METHOD:: play
+Output this object's message.
+
+ARGUMENT::  ... args
+Override the values stored in the object. Values not specified in code::args:: will use the last-saved values. (This is similar to Pure Data or Max MIDI output objects.) Arrays will multichannel expand.
+
+
+METHOD:: status
+Get (or set) the appropriate MIDI status byte. Note: While a code::status_:: method is provided, a mismatch between the object type and status byte may result in undefined behavior.
+
+ARGUMENT:: byte
+Status byte (integer).
+
+
+METHOD:: flags
+Get or set the top four bits of the status byte. Note: A mismatch between the object type and status flags may result in undefined behavior.
+
+
+METHOD:: channel
+Get or set the 4-bit MIDI channel number (0-15).
+
+
+METHOD:: device
+Get or set the link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender:: object to which messages will be directed.
+
+
+METHOD:: latency
+Get or set the latency (seconds) that will be applied to outgoing messages.
+
+
+METHOD:: dataA
+Get or set the first data byte of the outgoing message. This may be overwritten by link::#-play::.
+
+METHOD:: dataB
+Get or set the second data byte of the outgoing message. This may be overwritten by link::#-play::.
+
+
+private:: prPlay, flop, constructor, keys
+
+
+
+EXAMPLES::
+
+See subclass help for more detailed examples.
+
+code::
+MIDIClient.init;
+
+// here, use methods and values appropriate to your system
+// in Linux, 'connect' rules apply!
+m = MIDISender(...);
+
+n = MIDINoteMessage(channel: 0, device: m, latency: 0.2);
+
+n.play(60, 64, 2);  // sustain for two beats
+
+n.play([60, 64, 67], 64, 2);  // multichannel expansion!
+::
