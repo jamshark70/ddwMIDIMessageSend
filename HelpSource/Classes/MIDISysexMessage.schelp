@@ -25,6 +25,13 @@ An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::
 
 INSTANCEMETHODS::
 
+METHOD:: play
+Put new data into this instance, and send it out the assigned port. The only argument is the sysex packet, given as an link::Classes/Int8Array::. A code::nil:: will use the previously-set value (similar to a cold inlet in Max/Pd). Keyword addressing is not supported.
+
+NOTE:: This method modifies the contents of the object! ::
+
+NOTE:: Unlike link::Classes/MIDIOut#-sysex::, the Int8Array should emphasis::not:: include the 0xF0 and 0xF7 delimiters. ::
+
 private:: prPlay, flop, constructor, keys
 
 

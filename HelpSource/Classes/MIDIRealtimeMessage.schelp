@@ -100,6 +100,15 @@ The latency (seconds) that will be applied to outgoing messages.
 
 INSTANCEMETHODS::
 
+METHOD:: play
+Put new data into this instance, and send it out the assigned port.
+
+For a code::MIDIRealtimeMessage.songPos:: object, the only code::play:: argument is the 14-bit song position value. A code::nil:: in this position will use the previously-set value (similar to a cold inlet in Max/Pd). Keyword addressing is not supported.
+
+For the other MIDIRealtimeMessage types, all arguments are ignored.
+
+Real-time messages are not addressed to channels, so there is no channel argument.
+
 
 private:: prPlay, flop, constructor, keys
 

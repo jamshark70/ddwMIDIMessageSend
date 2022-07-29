@@ -30,6 +30,11 @@ The latency (seconds) that will be applied to outgoing messages.
 
 INSTANCEMETHODS::
 
+METHOD:: play
+Put new data into this instance, and send it out the assigned port. Arguments are: CC number, value, channel. A code::nil:: in any of these positions will use the previously-set value (similar to a cold inlet in Max/Pd). Keyword addressing is not supported.
+
+NOTE:: This method modifies the contents of the object! ::
+
 
 private:: prPlay, flop, constructor, keys
 
