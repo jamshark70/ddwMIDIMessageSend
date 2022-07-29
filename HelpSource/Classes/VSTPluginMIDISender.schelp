@@ -1,0 +1,68 @@
+TITLE:: VSTPluginMIDISender
+summary:: A VSTPlugin target for the MIDIMessage framework
+categories:: External Control>MIDI
+related:: Classes/MIDISender, Classes/MIDIMessage
+
+DESCRIPTION::
+
+A target for link::Classes/MIDIMessage:: objects, sending to an active link::Classes/VSTPluginController::.
+
+This assumes you have installed the VSTPlugin extension from IEM's website: link::https://git.iem.at/pd/vstplugin/-/releases::. (If you haven't installed the extension, this help page will produce broken-link errors.)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance, based on an existing link::Classes/VSTPluginController::.
+
+ARGUMENT:: owner
+An instance of link::Classes/VSTPluginController::, which you should have created in advance.
+
+
+INSTANCEMETHODS::
+
+In general, you will not use VSTPluginMIDISender instance methods. Instead, pass the VSTPluginMIDISender to a link::Classes/MIDIMessage:: subclass at creation time. The VSTPluginMIDISender will be used internally to transmit data from the message object.
+
+
+subsection:: Properties
+
+METHOD:: owner
+Get or set the link::Classes/VSTPluginController:: instance.
+
+
+private:: printOn, storeOn, sendSysex, sendBytes, prSend
+
+EXAMPLES::
+
+code::
+s.boot;
+
+(
+SynthDef(\vst, { |out, id = 1|
+	Out.ar(out, VSTPlugin.ar(numOut: 2, id: id));
+}).add;
+)
+
+a = Synth(\vst);
+c = VSTPluginController(a);
+
+c.open("...");  // here, use the 'key' for a VST in your system
+c.editor;  // prepare a sound in the instrument's GUI
+
+m = VSTPluginMIDISender(c);
+
+MIDINoteMessage(device: m).play(60, 80, 2);
+
+(
+p = Pbind(
+	\type, \midisend,
+	\midisend, m,
+	\midinote, Pwhite(36, 84, inf),
+	\dur, Pexprand(0.07, 1.5, inf),
+	\legato, Pexprand(0.3, 5.0, inf),
+	\amp, Pwhite(0.4, 0.9, inf)
+).play;
+)
+
+p.stop;
+::

@@ -1,0 +1,20 @@
+TITLE:: AbstractMIDISender
+summary:: An abstract class for MIDIMessage target devices
+categories:: External Control>MIDI
+related:: Classes/MIDISender, Classes/VSTPluginMIDISender, Classes/MIDIMessage
+
+DESCRIPTION::
+
+A parent class for target devices suitable for link::Classes/MIDIMessage:: objects.
+
+This class is not useful directly!
+
+Subclasses should define:
+
+definitionlist::
+## sendBytes || Accepts arguments code::|latency(0), extraData, size ... bytes|:: and forwards to the output. code::extraData:: is currently used for the VST note detune parameter (which is, sadly, ignored by most VSTs) -- so, link::Classes/VSTPluginMIDISender:: passes it along, while link::Classes/MIDISender:: simply ignores it.
+
+## sendSysex || Accepts an argument code::|packet|:: (link::Classes/Int8Array::) and forwards it to the sysex output method.
+::
+
+Subclasses may define any other methods that are needed to connect to physical outputs. For instance, link::Classes/MIDISender:: defines constructor methods following the model of link::Classes/MIDIOut::.

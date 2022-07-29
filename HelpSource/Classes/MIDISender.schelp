@@ -1,0 +1,138 @@
+TITLE:: MIDISender
+summary:: Analogous to MIDIOut, but for the MIDIMessage framework
+categories:: External Control>MIDI
+related:: Classes/VSTPluginMIDISender, Classes/MIDIMessage
+
+DESCRIPTION::
+
+A target for link::Classes/MIDIMessage:: objects, sending to a MIDI port in the system.
+
+It uses the same primitives as link::Classes/MIDIOut::; be sure to read MIDIOut documentation for details on connecting to ports.
+
+Unlike MIDIOut, MIDISender does not include methods for sending specific MIDI messages. Instead, use subclasses of link::Classes/MIDIMessage:: for message content.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance. link::Classes/MIDIClient:: should have been initialized first.
+
+Parameters and behavior are the same as link::Classes/MIDIOut#*new::.
+
+NOTE:: As also observed in MIDIOut help, the behavior of code::*new:: is not compatible across operating systems. Code that requires cross-platform compatibility should use code::thisProcess.platform.name:: to determine which parameters to pass in. ::
+
+ARGUMENT:: port
+list::
+## macOS / Windows: An index into the code::MIDIClient.destinations:: array, identifying the device that should receive messages.
+## Linux: A number for the SuperCollider "out#" port, appearing in code::MIDIClient.sources::. See link::Classes/MIDIOut#Linux specific: Connecting and disconnecting ports:: for details.
+::
+
+ARGUMENT:: uid
+The uid of the target device from code::MIDIClient.destinations::.
+
+list::
+## macOS / Windows: Optional, and recommended to omit.
+## Linux: Optional. If provided, it directs MIDI messages to the specific device in code::MIDIClient.destinations:: with a matching uid (without creating a visible ALSA MIDI connection).
+::
+
+
+METHOD:: newByName
+A cross-platform way to connect to a MIDI target, using device names from code::MIDIClient.destinations:: instead of array indices or UIDs.
+
+ARGUMENT:: deviceName
+The exact device name (as a string) of the target device -- i.e., the first of the two strings found in the corresponding code::MIDIClient.destinations:: MIDIEndPoint object.
+
+ARGUMENT:: portName
+The exact port name (as a string) of the target device -- i.e., the second of the two strings  found in the corresponding code::MIDIClient.destinations:: MIDIEndPoint object.
+
+ARGUMENT:: dieIfNotFound
+A Boolean. If true, an link::Classes/Error:: will be thrown if the device isn't found. If false, a warning will be posted but it will go ahead and try to create the object for you (though it's unlikely to work).
+
+
+METHOD:: findPort
+A utility method to find a destination MIDIEndPoint, based on names.
+
+ARGUMENT:: deviceName
+The exact device name (as a string) of the target device -- i.e., the first of the two strings found in the corresponding code::MIDIClient.destinations:: MIDIEndPoint object.
+
+ARGUMENT:: portName
+The exact port name (as a string) of the target device -- i.e., the second of the two strings  found in the corresponding code::MIDIClient.destinations:: MIDIEndPoint object.
+
+returns:: 
+One of the link::Classes/MIDIEndPoint:: objects from code::MIDIClient.destinations::, matching the given names. If not found, returns code::nil::.
+
+INSTANCEMETHODS::
+
+In general, you will not use MIDISender instance methods. Instead, pass the MIDISender to a link::Classes/MIDIMessage:: subclass at creation time. The MIDISender will be used internally to transmit data from the message object.
+
+The only exception is that, in Linux, you may need to connect or disconnect the SuperCollider output port to a device's input port.
+
+
+METHOD:: connect
+Linux only. Connect from this instance's link::#-port:: to a MIDI client destination's input port. See link::Classes/MIDIOut#Linux specific: Connecting and disconnecting ports:: for details.
+
+This method is a no-op in macOS and Windows.
+
+ARGUMENT:: device
+An index into the code::MIDIClient.destinations:: array.
+
+
+METHOD:: disconnect
+Linux only. Disconnect this instance's link::#-port:: from a MIDI client destination's input port. See link::Classes/MIDIOut#Linux specific: Connecting and disconnecting ports:: for details.
+
+This method is a no-op in macOS and Windows.
+
+ARGUMENT:: device
+An index into the code::MIDIClient.destinations:: array.
+
+
+subsection:: Properties
+
+Setters are provided for these properties, because link::Classes/MIDIOut:: provides them. But, exercise caution. If you set one or the other and they mismatch, correct behavior is not guaranteed. In general, it is better to discard a MIDISender and create a new one, rather than to modify the properties.
+
+(In fact, MIDISender here has an opportunity to improve this interface. But, I will postpone this to a later version.)
+
+METHOD:: port
+Get or set the port number.
+
+list::
+## macOS / Windows: An index into the code::MIDIClient.destinations:: array, identifying the device that should receive messages.
+## Linux: A number for the SuperCollider "out#" port, appearing in code::MIDIClient.sources::. See link::Classes/MIDIOut#Linux specific: Connecting and disconnecting ports:: for details.
+::
+
+
+METHOD:: uid
+Get or set the uid. This should match the target device from code::MIDIClient.destinations::.
+
+In Linux, if this is nonzero, then ALSA MIDI connections will be ignored, and messages will go only to the specific device. If it is zero, then ALSA MIDI connections will be used.
+
+
+private:: printOn, storeOn, sendSysex, prSendToMIDIPort, sendBytes, prSysex
+
+EXAMPLES::
+
+code::
+MIDIClient.init;
+
+// macOS or Windows style
+m = MIDISender(
+	MIDIClient.destinations.detectIndex { |endpt|
+		endpt.device.containsi("... the output port I'm looking for ...")
+	}
+);
+
+// Linux style
+m = MIDISender(0).connect(
+	MIDIClient.destinations.detectIndex { |endpt|
+		endpt.device.containsi("... the output port I'm looking for ...")
+	}
+);
+
+// compatible style:
+(
+var endpt = MIDIClient.destinations.detectIndex { |endpt|
+	endpt.device.containsi("... the output port I'm looking for ...")
+};
+
+m = MIDISender.newByName(endpt.device, endpt.name);
+)
+::
