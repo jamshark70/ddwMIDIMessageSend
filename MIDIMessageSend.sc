@@ -76,6 +76,10 @@ MIDIControlMessage : MIDIMessage {
 	*new { |ccnum(1), value(64), channel(0), device, latency(0)|
 		^super.newCopyArgs(0xB0, channel, ccnum, value, device, latency)
 	}
+
+	*panic { |channel(0), device, latency(0)|
+		^super.newCopyArgs(0xB0, channel, 123, 0, device, latency)
+	}
 }
 
 MIDINoteMessage : MIDIMessage {
@@ -84,6 +88,11 @@ MIDINoteMessage : MIDIMessage {
 	*new { |note, velocity(64), dur, channel(0), device, latency(0)|
 		^super.newCopyArgs(0x90, channel, note, velocity, device, latency)
 		.dur_(dur)
+	}
+
+	*panic { |channel(0), device, latency(0)|
+		^super.newCopyArgs(0x90, channel, (0..127), 0, device, latency)
+		// dur should remain nil
 	}
 
 	keys { ^#[dataA, dataB, dur, channel] }

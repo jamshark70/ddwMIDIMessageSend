@@ -28,6 +28,24 @@ ARGUMENT:: latency
 The latency (seconds) that will be applied to outgoing messages.
 
 
+METHOD:: panic
+
+Create a control-message instance whose default values will send an all-notes-off controller message. For devices that don't respect controller #123, the brute force all-notes-off alternative, link::Classes/MIDINoteMessage#*panic::, may be needed.
+
+code::
+MIDIControlMessage.panic(device: aMIDISender).play;
+::
+
+ARGUMENT:: channel
+The MIDI channel to send to.
+
+ARGUMENT:: device
+An instance of link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+ARGUMENT:: latency
+The latency (seconds) that will be applied to outgoing messages.
+
+
 INSTANCEMETHODS::
 
 METHOD:: play
