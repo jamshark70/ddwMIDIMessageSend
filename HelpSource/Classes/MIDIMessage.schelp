@@ -23,10 +23,21 @@ list::
 ::
 
 
+subsection:: Usage
+
+You will need a target for the messages. Currently, this is either link::Classes/MIDISender:: or link::Classes/VSTPluginMIDISender::.
+
+Then, for each type of message you want to send, create an object for the message type. The example in this help file demonstrates the procedure for note messages.
+
 subsection:: Why?
 
-The excellent link::https://git.iem.at/pd/vstplugin:: extension is the main motivation for this quark. Most VST instruments accept MIDI messages, but there are fundamental differences between hardware MIDI output and virtual MIDI output to the SuperCollider audio server, particularly in the handling of messaging latency. It's my hope, by "inverting" the interface and focusing on message contents rather than message transport, that the physical differences would disappear for practical use cases.
+The excellent link::https://git.iem.at/pd/vstplugin:: extension is the main motivation for this quark. Most VST instruments accept MIDI messages, but there are fundamental differences between hardware MIDI output and virtual MIDI output to the SuperCollider audio server, particularly in the handling of messaging latency.
 
+That is, there is a need to specify MIDI message content that is independent of the message transport mechanism. This suggests an alternate semantic: rather than telling a port what to send, we could instead define objects to represent messages, attach these to the output port, and then simply link::#-play:: data through these message objects.
+
+It may be less convenient, initially, to create objects per message type: "But with MIDIOut, there's just one object, and I call different methods." If you don't need cross-device compatibility, then MIDIOut may be enough. But, if you need to abstract the message contents away from the output mechanism, then it does make sense for this to be modeled in the object structure.
+
+Also, for extensibility: Other targets could be added by subclassing link::Classes/AbstractMIDISender::. For instance, if you wanted to transmit MIDI messages over Open Sound Control, you could implement that protocol as an OSCMIDISender. Or you could translate MIDI information into an arbitrary format for, say, visualization in Processing. The code to produce the messages would be the same in all cases.
 
 
 INSTANCEMETHODS::
