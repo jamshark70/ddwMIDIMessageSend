@@ -55,7 +55,7 @@ MIDIMessage {
 	// general implementation for 3-byte messages
 	// subclasses may override
 	prPlay {
-		device.sendBytes(latency, 3, this.status, dataA, dataB)
+		device.sendBytes(latency, nil, 3, this.status, dataA, dataB)
 	}
 
 	printOn { |stream| this.storeOn(stream) }
@@ -98,13 +98,13 @@ MIDINoteMessage : MIDIMessage {
 		} {
 			if(dur.notNil) {
 				thisThread.clock.sched(max(0.01, dur), {
-					device.sendExtended(latency, (localA.frac * 100).asInteger,
+					device.sendBytes(latency, (localA.frac * 100).asInteger,
 						3, this.status bitAnd: 0x8F, localA.asInteger, localB
 					);
 				});
 			};
 		};
-		device.sendExtended(latency, (localA.frac * 100).asInteger,
+		device.sendBytes(latency, (localA.frac * 100).asInteger,
 			3, this.status, localA.asInteger, localB
 		);
 	}
@@ -119,7 +119,7 @@ MIDIBendMessage : MIDIMessage {
 
 	prPlay {
 		var value = dataA + 8192;
-		device.sendBytes(latency, 3, this.status,
+		device.sendBytes(latency, nil, 3, this.status,
 			value bitAnd: 0x7F, value >> 7 bitAnd: 0x7F
 		)
 	}
@@ -147,7 +147,7 @@ MIDITwoByteMessage : MIDIMessage {
 	}
 
 	prPlay {
-		device.sendBytes(latency, 2, this.status, dataA)
+		device.sendBytes(latency, nil, 2, this.status, dataA)
 	}
 
 	keys { ^#[dataA, channel] }
@@ -196,11 +196,11 @@ MIDIRealtimeMessage : MIDIMessage {
 
 	prPlay {
 		if(flags == 0xF2) {
-			device.sendBytes(latency, 3, this.status,
+			device.sendBytes(latency, nil, 3, this.status,
 				dataA bitAnd: 0x7F, dataA >> 7 bitAnd: 0x7F
 			)
 		} {
-			device.sendBytes(latency, 1, this.status)
+			device.sendBytes(latency, nil, 1, this.status)
 		}
 	}
 
@@ -336,16 +336,16 @@ AbstractMIDISender {
 			)));
 		};
 	}
-
-	sendSysex { |packet|
-		this.subclassResponsibility(thisMethod)
-	}
 }
 
 MIDISender : AbstractMIDISender {
 	var <>port, <>uid;
 
 	// constructors are specific to MIDISender
+
+	// NB: These constructor methods are taken from SuperCollider source code,
+	// because they need to be compatible.
+
 	*new { arg port, uid;
 		if(thisProcess.platform.name != \linux) {
 			^super.newCopyArgs(port, uid ?? { MIDIClient.destinations[port].uid });
@@ -391,37 +391,35 @@ MIDISender : AbstractMIDISender {
 		};
 	}
 
-	// Linux specific perhaps
+	// NB: Methods taken from MIDIOut end here.
+	// Following this point is original work.
+
+	// Linux specific
+	// Go check "extMIDIOut" under Platform/osx and Platform/windows
+	// both of these are empty methods
 	connect { |device = 0|
-		// MIDIOut is perhaps a bit sloppy by exposing this
-		// as a class method, but it helps us here
-		MIDIOut.connect(port, device)
+		if(thisProcess.platform.name == \linux) {
+			// MIDIOut is perhaps a bit sloppy by exposing this
+			// as a class method, but it helps us here
+			MIDIOut.connect(port, device)
+		};
 	}
 	disconnect { |device = 0|
-		MIDIOut.disconnect(port, device)
+		if(thisProcess.platform.name == \linux) {
+			MIDIOut.disconnect(port, device)
+		};
 	}
 
-	sendBytes { |latency(0), size ... bytes|
+	// "true" MIDI ignores extraData
+	sendBytes { |latency(0), extraData, size ... bytes|
 		this.prSendToMIDIPort(port, uid, size,
 			bytes[0] bitAnd: 0xF0, bytes[0] bitAnd: 0x0F,
 			bytes[1] ?? { 0 }, bytes[2] ?? { 0 }, latency ?? { 0 }
 		)
 	}
-	sendExtended { |latency(0), extraData, size ... bytes|
-		this.prSendExtended(extraData, port, uid, size,
-			bytes[0] bitAnd: 0xF0, bytes[0] bitAnd: 0x0F,
-			bytes[1] ?? { 0 }, bytes[2] ?? { 0 }, latency ?? { 0 }
-		)
-	}
-
 	prSendToMIDIPort { arg outport, uid, len, hiStatus, loStatus, a=0, b=0, late;
 		_SendMIDIOut
 		^this.primitiveFailed;
-	}
-
-	// MIDISender simply drops extraData
-	prSendExtended { |extraData, outport, uid, len, hiStatus, loStatus, a=0, b=0, late|
-		this.prSendToMIDIPort(outport, uid, len, hiStatus, loStatus, a, b, late)
 	}
 
 	sendSysex { |packet|
@@ -447,10 +445,7 @@ VSTPluginMIDISender : AbstractMIDISender {
 		^super.newCopyArgs(owner)
 	}
 
-	sendBytes { |latency(0), size ... bytes|
-		this.prSend(latency, bytes)
-	}
-	sendExtended { |latency(0), extraData, size ... bytes|
+	sendBytes { |latency(0), extraData, size ... bytes|
 		this.prSend(latency, bytes, extraData)
 	}
 
