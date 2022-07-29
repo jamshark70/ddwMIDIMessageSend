@@ -29,11 +29,18 @@ You will need a target for the messages. Currently, this is either link::Classes
 
 Then, for each type of message you want to send, create an object for the message type. The example in this help file demonstrates the procedure for note messages.
 
+subsection:: Patterns
+
+link::Classes/AbstractMIDISender:: adds an event type code::\midisend:: into the default event prototype. Its usage should be identical to code::\midi::, except that the target device is specified as code::\midisend::. See Examples.
+
+
 subsection:: Why?
 
 The excellent link::https://git.iem.at/pd/vstplugin:: extension is the main motivation for this quark. Most VST instruments accept MIDI messages, but there are fundamental differences between hardware MIDI output and virtual MIDI output to the SuperCollider audio server, particularly in the handling of messaging latency.
 
-That is, there is a need to specify MIDI message content that is independent of the message transport mechanism. This suggests an alternate semantic: rather than telling a port what to send, we could instead define objects to represent messages, attach these to the output port, and then simply link::#-play:: data through these message objects.
+That is, there is a need to specify MIDI message content so that emphasis::the same message-production code could be used with any message transport mechanism::.
+
+This suggests an alternate semantic: rather than telling a port what to send, we could instead define objects to represent messages, attach these to the output port, and then simply link::#-play:: data through these message objects.
 
 It may be less convenient, initially, to create objects per message type: "But with MIDIOut, there's just one object, and I call different methods." If you don't need cross-device compatibility, then MIDIOut may be enough. But, if you need to abstract the message contents away from the output mechanism, then it does make sense for this to be modeled in the object structure.
 
@@ -94,9 +101,30 @@ MIDIClient.init;
 // in Linux, 'connect' rules apply!
 m = MIDISender(...);
 
+// or, use a VST plugin
+// this should be the ONLY change in your code!
+// m = VSTPluginMIDISender(myVSTPluginController);
+
 n = MIDINoteMessage(channel: 0, device: m, latency: 0.2);
 
 n.play(60, 64, 2);  // sustain for two beats
 
 n.play([60, 64, 67], 64, 2);  // multichannel expansion!
+
+
+// play this using a piano sound
+// instant fake serialism!
+
+(
+p = Pbind(
+	\type, \midisend,
+	\midisend, m,
+	\midinote, Pwhite(36, 84, inf),
+	\dur, Pexprand(0.07, 1.5, inf),
+	\legato, Pexprand(0.3, 5.0, inf),
+	\amp, Pwhite(0.4, 0.9, inf)
+).play;
+)
+
+p.stop;
 ::
