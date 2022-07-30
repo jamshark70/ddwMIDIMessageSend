@@ -3,6 +3,7 @@
 	summary:		"A message-focused, device-agnostic MIDI output interface.",
 	author:		"James Harkins",
 	version:		1.0,
-	helpdoc:		"",
+	schelp:		"Classes/MIDIMessage",
+	helpdoc:	"https://github.com/jamshark70/ddwMIDIMessageSend/blob/main/README.md",
 	url:			"http://www.dewdrop-world.net/sc3"
 )
