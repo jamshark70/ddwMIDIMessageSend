@@ -23,11 +23,18 @@ MIDIMessage {
 	flop {
 		var class = this.class;
 		var constructor = this.constructor;
+		var d = { |i|
+			if(device.size > 0) {
+				device.wrapAt(i)
+			} {
+				device
+			}
+		};
 		^this.keys.collect(this.perform(_))
 		.flop
-		.collect { |row|
+		.collect { |row, i|
 			class.performList(constructor, row)
-			.device_(device).latency_(latency)
+			.device_(d.value(i)).latency_(latency)
 		}
 		.unbubble
 	}
@@ -108,13 +115,13 @@ MIDINoteMessage : MIDIMessage {
 			if(dur.notNil) {
 				thisThread.clock.sched(max(0.01, dur), {
 					device.sendBytes(latency, (localA.frac * 100).asInteger,
-						3, this.status bitAnd: 0x8F, localA.asInteger, localB
+						3, status bitAnd: 0x8F, localA.asInteger, localB
 					);
 				});
 			};
 		};
 		device.sendBytes(latency, (localA.frac * 100).asInteger,
-			3, this.status, localA.asInteger, localB
+			3, status, localA.asInteger, localB
 		);
 	}
 }
@@ -349,6 +356,7 @@ AbstractMIDISender {
 
 MIDISender : AbstractMIDISender {
 	var <>port, <>uid;
+	var <>debug = false;
 
 	// constructors are specific to MIDISender
 
@@ -421,6 +429,10 @@ MIDISender : AbstractMIDISender {
 
 	// "true" MIDI ignores extraData
 	sendBytes { |latency(0), extraData, size ... bytes|
+		if(debug) {
+			"MIDI send: latency = %, bytes = %, extraData = %\n"
+			.postf(latency, bytes, extraData);
+		};
 		this.prSendToMIDIPort(port, uid, size,
 			bytes[0] bitAnd: 0xF0, bytes[0] bitAnd: 0x0F,
 			bytes[1] ?? { 0 }, bytes[2] ?? { 0 }, latency ?? { 0 }
@@ -449,12 +461,17 @@ MIDISender : AbstractMIDISender {
 
 VSTPluginMIDISender : AbstractMIDISender {
 	var <>owner;
+	var <>debug = false;
 
 	*new { |owner|
 		^super.newCopyArgs(owner)
 	}
 
 	sendBytes { |latency(0), extraData, size ... bytes|
+		if(debug) {
+			"VST MIDI send: latency = %, bytes = %, extraData = %\n"
+			.postf(latency, bytes, extraData);
+		};
 		this.prSend(latency, bytes, extraData)
 	}
 
