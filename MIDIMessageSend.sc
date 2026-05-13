@@ -134,7 +134,7 @@ MIDIBendMessage : MIDIMessage {
 	}
 
 	prPlay {
-		var value = dataA + 8192;
+		var value = dataA.asInteger + 8192;
 		device.sendBytes(latency, nil, 3, this.status,
 			value bitAnd: 0x7F, value >> 7 bitAnd: 0x7F
 		)
